@@ -4,19 +4,20 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "MENU")
+@Table(name = "AW_PIZZA")
 @Data
-public class MenuEntity {
+public class PizzaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String code;
-
+    @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "ingredients", nullable = false)
     private String ingredients;
 
+    @Column(name = "price", nullable = false)
     private Double price;
 }

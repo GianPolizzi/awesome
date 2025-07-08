@@ -1,7 +1,7 @@
 package com.pizza.awesome.controller;
 
-import com.pizza.awesome.model.entity.MenuEntity;
-import com.pizza.awesome.service.MenuService;
+import com.pizza.awesome.model.entity.PizzaEntity;
+import com.pizza.awesome.service.PizzaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,11 +14,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/menu")
-@Tag(name = "Menu", description = "Operations related to the pizza menu")
-public class MenuController {
+@Tag(name = "Menu Awesome Pizza", description = "Operations related to the pizza menu")
+public class PizzaController {
 
     @Autowired
-    private MenuService menuService;
+    private PizzaService pizzaService;
 
     @GetMapping("/show")
     @Operation(summary = "Get all pizzas on the menu",
@@ -27,7 +27,7 @@ public class MenuController {
                     @ApiResponse(responseCode = "200", description = "Successfully retrieved list"),
                     @ApiResponse(responseCode = "500", description = "Internal server error")
             })
-    public List<MenuEntity> getMenuPizza(){
-        return menuService.getMenu();
+    public List<PizzaEntity> getMenuPizza(){
+        return pizzaService.getMenu();
     }
 }
