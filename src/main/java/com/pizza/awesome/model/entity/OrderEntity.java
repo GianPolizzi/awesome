@@ -3,6 +3,7 @@ package com.pizza.awesome.model.entity;
 import com.pizza.awesome.utils.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -37,6 +38,9 @@ public class OrderEntity {
     @Column(name = "total_price", nullable = false)
     private Double totalPrice;
 
+    @Column(name = "currency", nullable = false)
+    private String currency;
+
     @Column(name = "insert_order_date", nullable = false)
     private LocalDateTime insertOrderDate;
 
@@ -48,5 +52,6 @@ public class OrderEntity {
     // cascade = CascadeType.ALL significa che se elimini un Order, vengono eliminati anche i suoi OrderDetails
     // orphanRemoval = true significa che se rimuovi un OrderDetail dalla lista, viene eliminato dal DB
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     private List<OrderDetailEntity> orderDetails = new ArrayList<>();
 }

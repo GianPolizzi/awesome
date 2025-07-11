@@ -2,6 +2,7 @@ package com.pizza.awesome.model.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 
 @Entity
@@ -15,6 +16,7 @@ public class OrderDetailEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
+    @ToString.Exclude
     private OrderEntity order;
 
     @ManyToOne(fetch = FetchType.LAZY)
