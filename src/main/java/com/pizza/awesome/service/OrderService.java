@@ -3,6 +3,8 @@ package com.pizza.awesome.service;
 import com.pizza.awesome.exception.ResourceNotFoundException;
 import com.pizza.awesome.model.dto.OrderDetailRequestDto;
 import com.pizza.awesome.model.dto.OrderRequestDto;
+import com.pizza.awesome.model.dto.OrderResponseDetailDto;
+import com.pizza.awesome.model.dto.OrderResponseDto;
 import com.pizza.awesome.model.entity.OrderDetailEntity;
 import com.pizza.awesome.model.entity.OrderEntity;
 import com.pizza.awesome.model.entity.PizzaEntity;
@@ -35,25 +37,12 @@ public class OrderService {
     @Transactional
     public OrderEntity createOrder(OrderRequestDto orderRequestDto){
 
-        OrderDetailsProcessingResult result = processOrderDetails(orderRequestDto.getOrderDetailsDto());
-
-        OrderEntity orderEntity = new OrderEntity();
-        orderEntity.setCustomerName(orderRequestDto.getCustomerName());
-        orderEntity.setCustomerAddress(orderRequestDto.getCustomerAddress());
-        orderEntity.setCustomerPhone(orderRequestDto.getCustomerPhone());
-        orderEntity.setOrderStatus(OrderStatus.PENDING);
-        orderEntity.setInsertOrderDate(LocalDateTime.now());
-        orderEntity.setTotalQuantity(result.getPizzaTotalQuantity().get());
-        orderEntity.setTotalPrice(result.getPizzaTotalPrice().sum());
-        orderEntity.setCurrency(Constants.EURO);
-
-        // 3. Collega i Dettagli all'Ordine e viceversa
-        // Imposta la relazione bidirezionale Order <-> OrderDetail
-        result.getOrderDetailsEntity()
+        OrderDetailsProcessingResult orderDetailsProcessed = getOrderDetails(orderRequestDto.getOrderDetailsDto());
+        OrderEntity orderEntity = getOrderEntity(orderRequestDto, orderDetailsProcessed);
+        orderDetailsProcessed.getOrderDetailsEntity()
                 .forEach(orderDetailEntity -> orderDetailEntity.setOrder(orderEntity));
-        orderEntity.setOrderDetails(result.getOrderDetailsEntity()); // Imposta la lista di OrderDetails nell'Order
+        orderEntity.setOrderDetails(orderDetailsProcessed.getOrderDetailsEntity());
 
-        // 4. Salva l'Ordine (che casca anche i dettagli)
         return orderRepository.save(orderEntity);
     }
 
@@ -65,41 +54,54 @@ public class OrderService {
         return orderEntityOpt.get();
     }
 
-    public List<OrderEntity> getOrdersInPending(){
+    public List<OrderResponseDto> getOrdersInPendingStatus(){
         List<OrderEntity> ordersInPending = orderRepository.findByOrderStatusOrderByInsertOrderDateAsc(OrderStatus.PENDING);
-        return ordersInPending;
-    }
+        List<OrderResponseDto> ordersResponseDto = new ArrayList<>();
+        if(!ordersInPending.isEmpty()) {
+            ordersResponseDto = ordersInPending.stream().map(orderEntity -> {
+                OrderResponseDto orderResponseDto = new OrderResponseDto();
+                orderResponseDto.setOrderCode(orderEntity.getId());
+                orderResponseDto.setOrderStatus(orderEntity.getOrderStatus());
+                orderResponseDto.setTotalPrice(orderEntity.getTotalPrice());
+                orderResponseDto.setCurrency(orderEntity.getCurrency());
 
-    public void updateOrderStatusInProcess(){
-        List<OrderEntity> ordersInProcess = orderRepository.findByOrderStatusOrderByInsertOrderDateAsc(OrderStatus.PENDING);
-        OrderEntity orderInProcess = Optional.ofNullable(ordersInProcess).orElse(List.of())
-                .stream()
-                .findFirst()
-                .orElse(null);
+                List<OrderResponseDetailDto> orderResponseDetailsDto = orderEntity.getOrderDetails().stream()
+                        .map(orderDetailEntity -> {
+                            OrderResponseDetailDto orderResponseDetailDto = new OrderResponseDetailDto();
+                            orderResponseDetailDto.setPizza(orderDetailEntity.getPizza().getName());
+                            orderResponseDetailDto.setQuantity(orderDetailEntity.getQuantity());
+                            orderResponseDetailDto.setAdditionalInfo(orderDetailEntity.getAdditionalInfo());
+                            return orderResponseDetailDto;
+                        }).toList();
+
+                orderResponseDto.setPizzaDetails(orderResponseDetailsDto);
+                return orderResponseDto;
+            }).toList();
+        }
+        return ordersResponseDto;
     }
 
     @Transactional
-    public OrderEntity updateOrderStatusReady(){
-        List<OrderEntity> ordersInProcess = orderRepository.findByOrderStatusOrderByInsertOrderDateAsc(OrderStatus.IN_PROCESS);
-        if(ordersInProcess.isEmpty()){
-            ordersInProcess = orderRepository.findByOrderStatusOrderByInsertOrderDateAsc(OrderStatus.PENDING);
-        }
-        OrderEntity order = Optional.ofNullable(ordersInProcess)
-                .orElseThrow(() -> new ResourceNotFoundException("There isn't any order to process!"))
-                .stream()
-                .findFirst()
-                .get();
+    public OrderEntity updateOrderNextStatus(){
+        Optional<OrderEntity> orderToUpdate = findNextOrder(OrderStatus.IN_PROCESS);
 
-        if(order.getOrderStatus().equals(OrderStatus.IN_PROCESS)){
-            order.setOrderStatus(OrderStatus.READY);
+        if (orderToUpdate.isEmpty()) {
+            orderToUpdate = findNextOrder(OrderStatus.PENDING);
         }
-        else{
+
+        OrderEntity order = orderToUpdate.orElseThrow(
+                () -> new ResourceNotFoundException("There isn't any order to process!")
+        );
+
+        if (order.getOrderStatus() == OrderStatus.IN_PROCESS) {
+            order.setOrderStatus(OrderStatus.READY);
+        } else {
             order.setOrderStatus(OrderStatus.IN_PROCESS);
         }
         return order;
     }
 
-    private OrderDetailsProcessingResult processOrderDetails(List<OrderDetailRequestDto> orderDetailsRequestDto){
+    private OrderDetailsProcessingResult getOrderDetails(List<OrderDetailRequestDto> orderDetailsRequestDto){
 
         AtomicInteger pizzaTotalQuantity = new AtomicInteger(0);
         DoubleAdder pizzaTotalPrice = new DoubleAdder();
@@ -107,25 +109,39 @@ public class OrderService {
         List<OrderDetailEntity> orderDetailsEntity =
                 orderDetailsRequestDto.stream()
                         .map(orderDetailDto -> {
-                            // Trova la pizza per ID. Se non esiste, lancia un'eccezione
                             PizzaEntity pizzaEntity = pizzaRepository.findById(orderDetailDto.getPizzaId())
                                     .orElseThrow(() -> new ResourceNotFoundException("Pizza with ID " + orderDetailDto.getPizzaId() + " not found."));
 
-                            // Calcola il prezzo per questo item e aggiungilo al totale
                             double pizzaDetailTotalPrice = pizzaEntity.getPrice() * orderDetailDto.getQuantity();
 
                             pizzaTotalQuantity.addAndGet(orderDetailDto.getQuantity());
                             pizzaTotalPrice.add(pizzaDetailTotalPrice);
 
-                            // Crea l'OrderDetail
                             OrderDetailEntity orderDetailEntity = new OrderDetailEntity();
                             orderDetailEntity.setPizza(pizzaEntity);
                             orderDetailEntity.setQuantity(orderDetailDto.getQuantity());
                             orderDetailEntity.setAdditionalInfo(orderDetailDto.getVariations());
 
-                            // Non impostiamo qui l'Order, lo faremo dopo aver creato l'Order principale
                             return orderDetailEntity;
                         }).collect(Collectors.toList());
         return new OrderDetailsProcessingResult(orderDetailsEntity, pizzaTotalQuantity, pizzaTotalPrice);
+    }
+
+    private OrderEntity getOrderEntity(OrderRequestDto orderRequestDto, OrderDetailsProcessingResult orderDetailsProcessed){
+        OrderEntity orderEntity = new OrderEntity();
+        orderEntity.setCustomerName(orderRequestDto.getCustomerName());
+        orderEntity.setCustomerAddress(orderRequestDto.getCustomerAddress());
+        orderEntity.setCustomerPhone(orderRequestDto.getCustomerPhone());
+        orderEntity.setOrderStatus(OrderStatus.PENDING);
+        orderEntity.setInsertOrderDate(LocalDateTime.now());
+        orderEntity.setTotalQuantity(orderDetailsProcessed.getPizzaTotalQuantity().get());
+        orderEntity.setTotalPrice(orderDetailsProcessed.getPizzaTotalPrice().sum());
+        orderEntity.setCurrency(Constants.EURO);
+        return orderEntity;
+    }
+
+    private Optional<OrderEntity> findNextOrder(OrderStatus status) {
+        List<OrderEntity> orders = orderRepository.findByOrderStatusOrderByInsertOrderDateAsc(status);
+        return orders.stream().findFirst();
     }
 }

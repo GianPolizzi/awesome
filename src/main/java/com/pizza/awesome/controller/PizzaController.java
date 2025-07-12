@@ -28,6 +28,6 @@ public class PizzaController {
                     @ApiResponse(responseCode = "500", description = "Internal server error")
             })
     public List<PizzaEntity> getMenuPizza(){
-        return pizzaService.getMenu();
+        return pizzaService.getAllPizzas();
     }
 }

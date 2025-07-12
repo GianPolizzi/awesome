@@ -44,13 +44,6 @@ public class OrderEntity {
     @Column(name = "insert_order_date", nullable = false)
     private LocalDateTime insertOrderDate;
 
-    @Column(name = "update_order_date")
-    private LocalDateTime updateOrderDate;
-
-    // --- Relazione Uno-a-Molti con OrderDetail ---
-    // mappedBy indica il campo nell'entità OrderDetail che "gestisce" la relazione
-    // cascade = CascadeType.ALL significa che se elimini un Order, vengono eliminati anche i suoi OrderDetails
-    // orphanRemoval = true significa che se rimuovi un OrderDetail dalla lista, viene eliminato dal DB
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     private List<OrderDetailEntity> orderDetails = new ArrayList<>();

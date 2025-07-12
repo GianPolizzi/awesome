@@ -3,7 +3,6 @@ package com.pizza.awesome.utils;
 import com.pizza.awesome.model.entity.OrderDetailEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.experimental.Accessors;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;

@@ -13,7 +13,7 @@ public class PizzaService {
     @Autowired
     private PizzaRepository pizzaRepository;
 
-    public List<PizzaEntity> getMenu(){
+    public List<PizzaEntity> getAllPizzas(){
         return pizzaRepository.findAll();
     }
 

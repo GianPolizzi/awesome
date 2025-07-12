@@ -1,7 +1,6 @@
 package com.pizza.awesome.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Column;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -21,7 +20,7 @@ public class OrderRequestDto {
     @NotBlank(message = "Customer phone is required")
     private String customerPhone;
 
-    @JsonProperty(namespace = "order_details")
+    @JsonProperty("orderDetails")
     @NotEmpty(message = "Order must contain at least one pizza")
     @Valid
     private List<OrderDetailRequestDto> orderDetailsDto;
