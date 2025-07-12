@@ -122,4 +122,13 @@ public class OrderController {
         }
         return ResponseEntity.ok(ordersResponseDto);
     }
+
+    @PutMapping("/status/update")
+    public ResponseEntity<CreateOrderResponseDto> updateOrderStatus(){
+        OrderEntity order = orderService.updateOrderStatusReady();
+        CreateOrderResponseDto createOrderResponseDto = new CreateOrderResponseDto();
+        createOrderResponseDto.setOrderCode(order.getId());
+        createOrderResponseDto.setOrderStatus(order.getOrderStatus());
+        return ResponseEntity.ok(createOrderResponseDto);
+    }
 }

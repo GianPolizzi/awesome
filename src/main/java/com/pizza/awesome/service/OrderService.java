@@ -70,6 +70,35 @@ public class OrderService {
         return ordersInPending;
     }
 
+    public void updateOrderStatusInProcess(){
+        List<OrderEntity> ordersInProcess = orderRepository.findByOrderStatusOrderByInsertOrderDateAsc(OrderStatus.PENDING);
+        OrderEntity orderInProcess = Optional.ofNullable(ordersInProcess).orElse(List.of())
+                .stream()
+                .findFirst()
+                .orElse(null);
+    }
+
+    @Transactional
+    public OrderEntity updateOrderStatusReady(){
+        List<OrderEntity> ordersInProcess = orderRepository.findByOrderStatusOrderByInsertOrderDateAsc(OrderStatus.IN_PROCESS);
+        if(ordersInProcess.isEmpty()){
+            ordersInProcess = orderRepository.findByOrderStatusOrderByInsertOrderDateAsc(OrderStatus.PENDING);
+        }
+        OrderEntity order = Optional.ofNullable(ordersInProcess)
+                .orElseThrow(() -> new ResourceNotFoundException("There isn't any order to process!"))
+                .stream()
+                .findFirst()
+                .get();
+
+        if(order.getOrderStatus().equals(OrderStatus.IN_PROCESS)){
+            order.setOrderStatus(OrderStatus.READY);
+        }
+        else{
+            order.setOrderStatus(OrderStatus.IN_PROCESS);
+        }
+        return order;
+    }
+
     private OrderDetailsProcessingResult processOrderDetails(List<OrderDetailRequestDto> orderDetailsRequestDto){
 
         AtomicInteger pizzaTotalQuantity = new AtomicInteger(0);
