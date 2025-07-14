@@ -22,7 +22,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         errorDetails.setError("Not Found");
         errorDetails.setPath(request.getDescription(false).replace("uri=", ""));
         errorDetails.setMessage(e.getMessage());
-
         return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
     }
 }
