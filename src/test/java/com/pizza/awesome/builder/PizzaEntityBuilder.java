@@ -20,6 +20,7 @@ public class PizzaEntityBuilder {
         margherita.setName("Margherita");
         margherita.setIngredients("pomodoro, mozzarella, olio, origano, basilico");
         margherita.setPrice(7.0);
+        margherita.setCurrency("EUR");
         return margherita;
     }
 
@@ -29,6 +30,7 @@ public class PizzaEntityBuilder {
         patapizza.setName("Patapizza");
         patapizza.setIngredients("pomodoro, mozzarella, wustel, patatine, olio, origano, basilico");
         patapizza.setPrice(9.0);
+        patapizza.setCurrency("EUR");
         return patapizza;
     }
 
@@ -38,6 +40,7 @@ public class PizzaEntityBuilder {
         pizzaiola.setName("Pizzaiola");
         pizzaiola.setIngredients("pomodoro, olio, origano, basilico");
         pizzaiola.setPrice(6.0);
+        pizzaiola.setCurrency("EUR");
         return pizzaiola;
     }
 }

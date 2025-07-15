@@ -20,4 +20,7 @@ public class PizzaEntity {
 
     @Column(name = "price", nullable = false)
     private Double price;
+
+    @Column(name = "currency", nullable = false)
+    private String currency;
 }
