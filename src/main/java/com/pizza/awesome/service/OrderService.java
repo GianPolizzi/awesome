@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -56,29 +55,28 @@ public class OrderService {
 
     public List<OrderResponseDto> getOrdersInPendingStatus(){
         List<OrderEntity> ordersInPending = orderRepository.findByOrderStatusOrderByInsertOrderDateAsc(OrderStatus.PENDING);
-        List<OrderResponseDto> ordersResponseDto = new ArrayList<>();
-        if(!ordersInPending.isEmpty()) {
-            ordersResponseDto = ordersInPending.stream().map(orderEntity -> {
-                OrderResponseDto orderResponseDto = new OrderResponseDto();
-                orderResponseDto.setOrderCode(orderEntity.getId());
-                orderResponseDto.setOrderStatus(orderEntity.getOrderStatus());
-                orderResponseDto.setTotalPrice(orderEntity.getTotalPrice());
-                orderResponseDto.setCurrency(orderEntity.getCurrency());
-
-                List<OrderResponseDetailDto> orderResponseDetailsDto = orderEntity.getOrderDetails().stream()
-                        .map(orderDetailEntity -> {
-                            OrderResponseDetailDto orderResponseDetailDto = new OrderResponseDetailDto();
-                            orderResponseDetailDto.setPizza(orderDetailEntity.getPizza().getName());
-                            orderResponseDetailDto.setQuantity(orderDetailEntity.getQuantity());
-                            orderResponseDetailDto.setAdditionalInfo(orderDetailEntity.getAdditionalInfo());
-                            return orderResponseDetailDto;
-                        }).toList();
-
-                orderResponseDto.setPizzaDetails(orderResponseDetailsDto);
-                return orderResponseDto;
-            }).toList();
+        if(ordersInPending.isEmpty()){
+            throw new ResourceNotFoundException("There isn't any order in pending status!");
         }
-        return ordersResponseDto;
+        return ordersInPending.stream().map(orderEntity -> {
+            OrderResponseDto orderResponseDto = new OrderResponseDto();
+            orderResponseDto.setOrderCode(orderEntity.getId());
+            orderResponseDto.setOrderStatus(orderEntity.getOrderStatus());
+            orderResponseDto.setTotalPrice(orderEntity.getTotalPrice());
+            orderResponseDto.setCurrency(orderEntity.getCurrency());
+
+            List<OrderResponseDetailDto> orderResponseDetailsDto = orderEntity.getOrderDetails().stream()
+                    .map(orderDetailEntity -> {
+                        OrderResponseDetailDto orderResponseDetailDto = new OrderResponseDetailDto();
+                        orderResponseDetailDto.setPizza(orderDetailEntity.getPizza().getName());
+                        orderResponseDetailDto.setQuantity(orderDetailEntity.getQuantity());
+                        orderResponseDetailDto.setAdditionalInfo(orderDetailEntity.getAdditionalInfo());
+                        return orderResponseDetailDto;
+                    }).toList();
+
+            orderResponseDto.setPizzaDetails(orderResponseDetailsDto);
+            return orderResponseDto;
+        }).toList();
     }
 
     @Transactional
@@ -120,7 +118,7 @@ public class OrderService {
                             OrderDetailEntity orderDetailEntity = new OrderDetailEntity();
                             orderDetailEntity.setPizza(pizzaEntity);
                             orderDetailEntity.setQuantity(orderDetailDto.getQuantity());
-                            orderDetailEntity.setAdditionalInfo(orderDetailDto.getVariations());
+                            orderDetailEntity.setAdditionalInfo(orderDetailDto.getAdditionalInfo());
 
                             return orderDetailEntity;
                         }).collect(Collectors.toList());

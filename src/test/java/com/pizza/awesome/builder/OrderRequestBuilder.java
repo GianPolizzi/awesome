@@ -3,7 +3,6 @@ package com.pizza.awesome.builder;
 import com.pizza.awesome.model.dto.OrderDetailRequestDto;
 import com.pizza.awesome.model.dto.OrderRequestDto;
 
-import java.util.Collections;
 import java.util.List;
 
 public class OrderRequestBuilder {
@@ -22,6 +21,6 @@ public class OrderRequestBuilder {
         return new OrderDetailRequestDto()
                 .setPizzaId(1L)
                 .setQuantity(2)
-                .setVariations("Lactose free");
+                .setAdditionalInfo("Lactose free");
     }
 }

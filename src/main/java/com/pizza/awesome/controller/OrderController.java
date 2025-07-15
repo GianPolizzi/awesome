@@ -29,7 +29,7 @@ public class OrderController {
     @Operation(summary = "Create order",
             description = "Create order and return order ID with status",
             responses = {
-                    @ApiResponse(responseCode = "201", description = "Order successfully submitted",
+                    @ApiResponse(responseCode = "201", description = "Order successfully created",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = BaseOrderResponseDto.class))),
                     @ApiResponse(responseCode = "400", description = "Invalid input or validation error",
@@ -44,13 +44,14 @@ public class OrderController {
             })
     public ResponseEntity<BaseOrderResponseDto> createOrder(@Valid @RequestBody OrderRequestDto orderRequest){
         OrderEntity newOrder = orderService.createOrder(orderRequest);
+        long orderId = newOrder.getId();
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequestUri()
                 .path("/{id}")
-                .buildAndExpand(newOrder.getId())
+                .buildAndExpand(orderId)
                 .toUri();
 
-        return ResponseEntity.created(location).body(new BaseOrderResponseDto(newOrder.getId(), newOrder.getOrderStatus()));
+        return ResponseEntity.created(location).body(new BaseOrderResponseDto(orderId, newOrder.getOrderStatus()));
     }
 
     @GetMapping("/{id}/status")

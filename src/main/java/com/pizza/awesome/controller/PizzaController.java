@@ -17,14 +17,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/menu")
-@Tag(name = "Menu Awesome Pizza", description = "Operations related to the pizza menu")
+@Tag(name = "Pizza", description = "Operations related to the pizza menu")
 public class PizzaController {
 
     @Autowired
     private PizzaService pizzaService;
 
     @GetMapping("/show")
-    @Operation(summary = "Get all pizzas on the menu",
+    @Operation(summary = "Get all pizzas",
             description = "Returns a list of all available pizzas with ingrdients",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Successfully retrieved list",

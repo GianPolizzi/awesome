@@ -10,7 +10,6 @@ import com.pizza.awesome.model.dto.OrderResponseDto;
 import com.pizza.awesome.model.entity.OrderEntity;
 import com.pizza.awesome.service.OrderService;
 import com.pizza.awesome.utils.OrderStatus;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -38,9 +37,6 @@ public class OrderControllerTest {
     @MockitoBean
     private OrderService orderService;
 
-    @BeforeEach
-    void setUp() {
-    }
 
     @Test
     void testCreateOrder_Success() throws Exception {

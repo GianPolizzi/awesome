@@ -139,11 +139,12 @@ class OrderServiceTest {
                 .thenReturn(List.of());
 
         // WHEN
-        List<OrderResponseDto> result = orderService.getOrdersInPendingStatus();
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+            orderService.getOrdersInPendingStatus();
+        });
 
         // THEN
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertEquals("There isn't any order in pending status!", exception.getMessage());
         verify(orderRepository, times(1)).findByOrderStatusOrderByInsertOrderDateAsc(OrderStatus.PENDING);
     }
 
