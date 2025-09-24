@@ -14,7 +14,7 @@ public class PizzaService {
     @Autowired
     private PizzaRepository pizzaRepository;
 
-    public List<PizzaEntity> getAllPizzas(){
+    public List<PizzaEntity> getAll(){
         List<PizzaEntity> pizzas = pizzaRepository.findAll();
         if(pizzas.isEmpty()){
             throw new ResourceNotFoundException("Sorry. The Awesome Pizza Menù is empty!");

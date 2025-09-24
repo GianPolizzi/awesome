@@ -30,10 +30,10 @@ public class PizzaControllerTest {
     void testGetPizzaMenu_Success() throws Exception {
         // GIVEN
         List<PizzaEntity> pizzas = PizzaEntityBuilder.buildPizzaMenu();
-        when(pizzaService.getAllPizzas()).thenReturn(pizzas);
+        when(pizzaService.getAll()).thenReturn(pizzas);
 
         // THEN
-        mockMvc.perform(get("/menu/show")
+        mockMvc.perform(get("/menu/getAll")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(3L))
@@ -46,11 +46,11 @@ public class PizzaControllerTest {
     @Test
     void testGetPizzaMenu_NotFound() throws Exception {
         // GIVEN
-        when(pizzaService.getAllPizzas())
+        when(pizzaService.getAll())
                 .thenThrow(new ResourceNotFoundException("Sorry. The Awesome Pizza Menù is empty!"));
 
         // THEN
-        mockMvc.perform(get("/menu/show")
+        mockMvc.perform(get("/menu/getAll")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 

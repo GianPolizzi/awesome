@@ -25,13 +25,13 @@ class PizzaServiceTest {
     private PizzaService pizzaService;
 
     @Test
-    void testGetAllPizzas_Success() {
+    void testGetAll_Success() {
         // GIVEN
         List<PizzaEntity> pizzaMenu = PizzaEntityBuilder.buildPizzaMenu();
         when(pizzaRepository.findAll()).thenReturn(pizzaMenu);
 
         // WHEN
-        List<PizzaEntity> pizzas = pizzaService.getAllPizzas();
+        List<PizzaEntity> pizzas = pizzaService.getAll();
 
         // THEN
         assertFalse(pizzas.isEmpty());
@@ -42,13 +42,13 @@ class PizzaServiceTest {
     }
 
     @Test
-    void testGetAllPizzas_EmptyMenu_ThrowsException() {
+    void testGetAll_EmptyMenu_ThrowsException() {
         // GIVEN
         when(pizzaRepository.findAll()).thenReturn(List.of());
 
         // WHEN
         ResourceNotFoundException exception =
-                assertThrows(ResourceNotFoundException.class, () -> pizzaService.getAllPizzas());
+                assertThrows(ResourceNotFoundException.class, () -> pizzaService.getAll());
 
         // THEN
         assertEquals("Sorry. The Awesome Pizza Menù is empty!", exception.getMessage());

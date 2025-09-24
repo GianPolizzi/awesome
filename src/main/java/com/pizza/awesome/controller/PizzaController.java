@@ -1,5 +1,6 @@
 package com.pizza.awesome.controller;
 
+import com.pizza.awesome.model.dto.ErrorResponseDto;
 import com.pizza.awesome.model.entity.PizzaEntity;
 import com.pizza.awesome.service.PizzaService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,16 +24,18 @@ public class PizzaController {
     @Autowired
     private PizzaService pizzaService;
 
-    @GetMapping("/show")
+    @GetMapping("/getAll")
     @Operation(summary = "Get all pizzas",
             description = "Returns a list of all available pizzas with ingrdients",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Successfully retrieved list",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = PizzaEntity.class))),
-                    @ApiResponse(responseCode = "500", description = "Internal server error")
+                    @ApiResponse(responseCode = "500", description = "Internal server error",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation =  ErrorResponseDto.class)))
             })
-    public ResponseEntity<List<PizzaEntity>> getMenuPizza(){
-        return ResponseEntity.ok(pizzaService.getAllPizzas());
+    public ResponseEntity<List<PizzaEntity>> getAll(){
+        return ResponseEntity.ok(pizzaService.getAll());
     }
 }
